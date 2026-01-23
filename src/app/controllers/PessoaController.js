@@ -14,6 +14,7 @@ class PessoaController {
       .then(row => res.json(row))
       .catch(error => res.status(500).json({ error: error }));
   }
+  
 
   store(req, res) {
     const data = req.body;
