@@ -15,6 +15,7 @@ class FornecedorController {
       .catch(error => res.status(500).json({ error: error }));
   }
 
+  
   store(req, res) {
     const data = req.body;
     FornecedorRepository.store(data)
