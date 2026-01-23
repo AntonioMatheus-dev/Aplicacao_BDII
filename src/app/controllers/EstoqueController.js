@@ -14,6 +14,7 @@ class EstoqueController {
             dados: []
           });
         }
+        
         res.status(200).json({
           message: `${produtos.length} produto(s) com estoque baixo`,
           limite: parseInt(limite),
