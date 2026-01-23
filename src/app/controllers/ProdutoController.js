@@ -15,6 +15,7 @@ class ProdutoController {
       .catch(error => res.status(500).json({ error: error }));
   }
 
+  
   store(req, res) {
     const { nomeProduto, categoria, precoVenda, estoque, precoCusto } = req.body;
     const params = [nomeProduto, categoria, precoVenda, estoque, precoCusto];
