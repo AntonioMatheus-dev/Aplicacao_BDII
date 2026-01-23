@@ -12,6 +12,7 @@ class VendasController {
       });
   }
 
+  
   // Buscar venda por ID
   show(req, res) {
     const { id } = req.params;
