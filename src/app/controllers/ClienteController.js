@@ -8,6 +8,7 @@ class ClienteController {
       .catch(error => res.status(500).json({ error: error }));
   }
 
+  
   show(req, res) {
     const { id } = req.params;
     ClienteRepository.findById(id)
