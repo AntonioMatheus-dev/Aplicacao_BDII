@@ -12,6 +12,9 @@ router.get("/estoque-baixo", (req, res) =>
   ProdutoController.estoqueBaixo(req, res),
 );
 
+router.get("/:id/historico", (req, res) => ProdutoController.historico(req, res));
+router.get("/movimentacoes", (req, res) => ProdutoController.movimentacoesGerais(req, res));
+
 // Parameterized routes last
 router.get("/:id", (req, res) => ProdutoController.show(req, res));
 router.put("/:id", (req, res) => ProdutoController.update(req, res));
