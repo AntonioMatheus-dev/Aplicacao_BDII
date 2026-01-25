@@ -46,6 +46,37 @@ class ProdutoController {
       .then(rows => res.json(rows))
       .catch(error => res.status(500).json({ error: error }));
   }
+
+  historico(req, res) {
+    const { id } = req.params;
+    ProdutoRepository.movimentacoes(id)
+      .then(movimentacoes => {
+        if (movimentacoes.length === 0) {
+          return res.status(404).json({ 
+            message: "Nenhuma movimentação encontrada para este produto"
+          });
+        }
+        res.status(200).json({
+          produtoId: id,
+          totalMovimentacoes: movimentacoes.length,
+          movimentacoes
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao buscar histórico:", error);
+        res.status(500).json({ error: error.message });
+      });
+  }
+
+  movimentacoesGerais(req, res) {
+    const limit = parseInt(req.query.limit) || 100;
+    ProdutoRepository.findAllMovimentacoes(limit)
+      .then(rows => res.json(rows))
+      .catch(error => {
+        console.error("Erro ao buscar movimentações:", error);
+        res.status(500).json({ error: error.message });
+      });
+  }
 }
 
 export default new ProdutoController();
