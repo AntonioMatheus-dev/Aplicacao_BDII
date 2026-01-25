@@ -41,6 +41,34 @@ class ProdutoRepository {
     const sql = "SELECT * FROM verificar_estoque_baixo($1);";
     return consulta(sql, [limite], "Erro ao verificar estoque");
   }
+
+  movimentacoes(produtoId) {
+    const sql = `
+      SELECT m.mov_id, m.produto_id, m.tipo, m.quantidade, 
+             m.documento_referencia, m.data_movimentacao,
+             p.NomeProduto, pb.NomeRazaoSocial
+      FROM MovimentacaoEstoque m
+      JOIN Produtos p ON m.produto_id = p.ProdutoID
+      JOIN PessoaBase pb ON m.pessoa_id = pb.PessoaID
+      WHERE m.produto_id = $1
+      ORDER BY m.data_movimentacao DESC;
+    `;
+    return consulta(sql, [produtoId]);
+  }
+
+  findAllMovimentacoes(limit = 100) {
+    const sql = `
+      SELECT m.mov_id, m.produto_id, m.tipo, m.quantidade, 
+             m.documento_referencia, m.data_movimentacao,
+             p.NomeProduto, pb.NomeRazaoSocial
+      FROM MovimentacaoEstoque m
+      JOIN Produtos p ON m.produto_id = p.ProdutoID
+      JOIN PessoaBase pb ON m.pessoa_id = pb.PessoaID
+      ORDER BY m.data_movimentacao DESC
+      LIMIT $1;
+    `;
+    return consulta(sql, [limit]);
+  }
 }
 
 export default new ProdutoRepository();
