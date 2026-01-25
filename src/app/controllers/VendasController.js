@@ -50,6 +50,21 @@ class VendasController {
         res.status(500).json({ error: error.message });
       });
   }
+
+  delete(req, res) {
+    const { id } = req.params;
+    VendaRepository.delete(id)
+      .then(() => res.json({ message: "Venda deletada e estoque estornado" }))
+      .catch(error => res.status(500).json({ error: error.message }));
+  }
+
+  update(req, res) {
+    const { id } = req.params;
+    const data = req.body;
+    VendaRepository.update(id, data)
+      .then(() => res.json({ message: "Venda atualizada" }))
+      .catch(error => res.status(500).json({ error: error.message }));
+  }
 }
 
 export default new VendasController();
