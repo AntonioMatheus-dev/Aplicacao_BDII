@@ -59,8 +59,9 @@ const app = {
 
     handleViewLoaded: (viewName) => {
         // Logic mapping
+        // Logic mapping
         if (viewName === 'dashboard') {
-            // Dashboard specific generic stats?
+            app.loadData('dashboard', '/produtos/movimentacoes');
         } else if (['produtos', 'clientes', 'fornecedores', 'vendas', 'estoque', 'compras', 'pessoas'].includes(viewName)) {
             app.loadData(viewName);
         }
@@ -118,6 +119,7 @@ const app = {
                     <td>${p.estoque}</td>
                     <td>
                         <button class="icon-btn" onclick="app.editItem('produto', ${p.produtoid})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="icon-btn" onclick="app.viewHistory(${p.produtoid})" title="Histórico"><i class="fa-solid fa-clock-rotate-left"></i></button>
                         <button class="icon-btn" style="color:red" onclick="app.deleteItem('produto', ${p.produtoid})"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
@@ -157,7 +159,12 @@ const app = {
                     <td>${v.nomecliente || v.clienteid}</td>
                     <td>${v.nomeproduto || v.produtoid}</td>
                     <td>${v.quantidade}</td>
+                    <td>${v.quantidade}</td>
                     <td>R$ ${v.valortotal}</td>
+                    <td>
+                        <button class="icon-btn" onclick="app.editItem('venda', ${v.vendaid})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="icon-btn" style="color:red" onclick="app.deleteItem('venda', ${v.vendaid})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `).join('');
 
@@ -178,7 +185,12 @@ const app = {
                     <td>${c.nomeproduto || c.produtoid}</td>
                     <td>${c.nomefornecedor || c.fornecedorid}</td>
                     <td>${c.quantidade}</td>
+                    <td>${c.quantidade}</td>
                     <td>R$ ${c.valortotal}</td>
+                    <td>
+                        <button class="icon-btn" onclick="app.editItem('compra', ${c.compraid})"><i class="fa-solid fa-pen"></i></button>
+                        <button class="icon-btn" style="color:red" onclick="app.deleteItem('compra', ${c.compraid})"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `).join('');
         } else if (section === 'pessoas') {
@@ -193,6 +205,19 @@ const app = {
                         <button class="icon-btn" onclick="app.editItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-pen"></i></button>
                         <button class="icon-btn" style="color:red" onclick="app.deleteItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-trash"></i></button>
                     </td>
+                </tr>
+                </tr>
+            `).join('');
+        } else if (section === 'dashboard') {
+             // New Dashboard Logic: Render Movements Table
+             html = data.map(m => `
+                <tr>
+                    <td>${new Date(m.data_movimentacao).toLocaleString()}</td>
+                    <td>${m.nomeproduto}</td>
+                    <td><span class="badge ${m.tipo === 'ENTRADA' ? 'success' : (m.tipo ==='SAIDA' ? 'danger' : 'warning')}">${m.tipo}</span></td>
+                    <td>${m.quantidade}</td>
+                    <td>${m.nomerazaosocial}</td>
+                    <td>${m.documento_referencia}</td>
                 </tr>
             `).join('');
         }
@@ -287,17 +312,17 @@ const app = {
                 <div class="form-group"><label>Observação</label><input type="text" name="observacao" value="${data?.observacao || ''}"></div>
             `;
         } else if (type === 'venda') {
-            title.textContent = 'Nova Venda';
+            title.textContent = app.currentEditId ? 'Editar Venda' : 'Nova Venda';
             body.innerHTML = 'Carregando...';
-            app.loadSaleOptions(body);
+            app.loadSaleOptions(body, data);
         } else if (type === 'compra') {
-            title.textContent = 'Nova Compra';
+            title.textContent = app.currentEditId ? 'Editar Compra' : 'Nova Compra';
             body.innerHTML = 'Carregando...';
-            app.loadCompraOptions(body);
+            app.loadCompraOptions(body, data);
         }
     },
 
-    loadSaleOptions: async (container) => {
+    loadSaleOptions: async (container, dataToFill = null) => {
         const [prods, clis] = await Promise.all([
             fetch('/produtos').then(r=>r.json()),
             fetch('/clientes').then(r=>r.json())
@@ -313,9 +338,17 @@ const app = {
             <div class="form-group"><label>Preço Unit.</label><input type="number" id="v-price" name="precoUnitario" readonly></div>
             <div class="form-group"><label>Total: <span id="v-total">0.00</span></label></div>
         `;
+
+        if(dataToFill) {
+            container.querySelector('[name="clienteId"]').value = dataToFill.clienteid;
+            container.querySelector('[name="produtoId"]').value = dataToFill.produtoid;
+            container.querySelector('[name="quantidade"]').value = dataToFill.quantidade;
+            container.querySelector('[name="precoUnitario"]').value = dataToFill.precounitario;
+            app.calcTotal('venda');
+        }
     },
 
-    loadCompraOptions: async (container) => {
+    loadCompraOptions: async (container, dataToFill = null) => {
         const [prods, forns] = await Promise.all([
             fetch('/produtos').then(r=>r.json()),
             fetch('/fornecedores').then(r=>r.json())
@@ -332,6 +365,14 @@ const app = {
             <div class="form-group"><label>Preço Unit. (Custo)</label><input type="number" id="c-price" name="precoUnitario" step="0.01" onchange="app.calcTotal('compra')"></div>
             <div class="form-group"><label>Total: <span id="c-total">0.00</span></label></div>
         `;
+
+        if(dataToFill) {
+            container.querySelector('[name="fornecedorId"]').value = dataToFill.fornecedorid;
+            container.querySelector('[name="produtoId"]').value = dataToFill.produtoid;
+            container.querySelector('[name="quantidade"]').value = dataToFill.quantidade;
+            container.querySelector('[name="precoUnitario"]').value = dataToFill.precounitario;
+            app.calcTotal('compra');
+        }
     },
 
     editItem: async (type, id) => {
@@ -341,6 +382,8 @@ const app = {
         if(type === 'fornecedor') apiPath = 'fornecedores';
         if(type === 'produto') apiPath = 'produtos';
         if(type === 'pessoa') apiPath = 'pessoas';
+        if(type === 'venda') apiPath = 'vendas';
+        if(type === 'compra') apiPath = 'compras';
 
         try {
             const res = await fetch(`/${apiPath}/${id}`);
@@ -352,6 +395,71 @@ const app = {
         } catch(e) {
             console.error(e);
             alert('Erro ao carregar dados para edição');
+        }
+    },
+
+    viewHistory: async (id) => {
+        try {
+             // Fetch history from new location in ProdutoController
+             const res = await fetch(`/produtos/${id}/historico`);
+             
+             const modal = document.getElementById('generic-modal');
+             const title = document.getElementById('modal-title');
+             const body = document.getElementById('modal-body');
+             const saveBtn = document.getElementById('modal-save');
+             
+             // Hide Save button for history view
+             saveBtn.style.display = 'none';
+
+             title.textContent = 'Histórico de Movimentação';
+             body.innerHTML = '<div class="loading">Carregando...</div>';
+             modal.classList.add('active');
+
+             if(!res.ok) {
+                 if(res.status === 404) {
+                     body.innerHTML = '<p>Nenhuma movimentação encontrada.</p>';
+                 } else {
+                     throw new Error('Erro ao buscar histórico');
+                 }
+                 return;
+             }
+
+             const data = await res.json();
+             const moves = data.movimentacoes;
+
+             let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Qtd</th>
+                            <th>Ref</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+             `;
+             
+             html += moves.map(m => `
+                <tr>
+                    <td>${new Date(m.data_movimentacao).toLocaleString()}</td>
+                    <td><span class="badge ${m.tipo === 'ENTRADA' ? 'success' : 'danger'}">${m.tipo}</span></td>
+                    <td>${m.quantidade}</td>
+                    <td>${m.documento_referencia || '-'}</td>
+                </tr>
+             `).join('');
+
+             html += '</tbody></table>';
+             body.innerHTML = html;
+
+             // Restore save button when modal closes (simple hack, better to use separate Modal logic)
+             const closeBtn = modal.querySelector('.close-modal');
+             const restoreBtn = () => { saveBtn.style.display = 'block'; closeBtn.removeEventListener('click', restoreBtn); };
+             closeBtn.addEventListener('click', restoreBtn);
+
+        } catch(e) {
+            console.error(e);
+            document.getElementById('modal-body').innerHTML = '<p class="error">Erro ao carregar histórico.</p>';
         }
     },
 
