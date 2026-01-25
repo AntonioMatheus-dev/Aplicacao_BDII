@@ -66,12 +66,19 @@ class ClienteRepository {
 
   
   delete(id) {
-    const sql = `
-      DELETE FROM Cliente 
-      WHERE ClienteID = $1
-      RETURNING ClienteID;
-    `;
-    return consulta(sql, [id]);
+    const sqlFind = "SELECT PessoaID FROM Cliente WHERE ClienteID = $1";
+    
+    return consulta(sqlFind, [id])
+      .then(rows => {
+        if (!rows || rows.length === 0) {
+           throw new Error("Cliente não encontrado");
+        }
+        const pessoaId = rows[0].pessoaid;
+        
+        // Deletar a PessoaBase (Cascade deve deletar o Cliente)
+        const sqlDelete = "DELETE FROM PessoaBase WHERE PessoaID = $1 RETURNING *";
+        return consulta(sqlDelete, [pessoaId]);
+      });
   }
 }
 
