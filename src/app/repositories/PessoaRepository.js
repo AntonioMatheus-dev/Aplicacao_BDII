@@ -14,19 +14,19 @@ class PessoaRepository {
 
   // Criar pessoa
   store(data) {
-    const { nome, email, tipo } = data;
+    const { nomerazaosocial, documento, contato, observacao } = data;
     return consulta(
-      "INSERT INTO PessoaBase (NomeRazaoSocial, Email, Tipo) VALUES ($1, $2, $3) RETURNING *",
-      [nome, email, tipo]
+      "INSERT INTO PessoaBase (NomeRazaoSocial, Documento, Contato, Observacao) VALUES ($1, $2, $3, $4) RETURNING *",
+      [nomerazaosocial, documento, contato, observacao]
     );
   }
 
   // Atualizar pessoa
   update(id, data) {
-    const { nome, email, tipo } = data;
+    const { nomerazaosocial, documento, contato, observacao } = data;
     return consulta(
-      "UPDATE PessoaBase SET NomeRazaoSocial = $1, Email = $2, Tipo = $3 WHERE PessoaID = $4 RETURNING *",
-      [nome, email, tipo, id]
+      "UPDATE PessoaBase SET NomeRazaoSocial = $1, Documento = $2, Contato = $3, Observacao = $4 WHERE PessoaID = $5 RETURNING *",
+      [nomerazaosocial, documento, contato, observacao, id]
     );
   }
 
