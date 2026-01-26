@@ -1,5 +1,5 @@
 // repositories/CompraRepository.js
-import { consulta } from "../database/conexao.js";
+import pool, { consulta } from "../database/conexao.js";
 
 class CompraRepository {
   // Buscar todas as compras com detalhes
@@ -24,11 +24,45 @@ class CompraRepository {
     return consulta("SELECT * FROM Compras WHERE CompraID = $1", [id]);
   }
 
-  // Registrar compra usando a PROCEDURE
-  registrar(p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario) {
-    const sql = "CALL registrar_compra($1, $2, $3, $4)";
-    return consulta(sql, [p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario], 
-      "Erro ao registrar compra");
+  // Registrar compra usando Transação Direta
+  async registrar(p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 1. Obter PessoaID do Fornecedor
+      const resPessoa = await client.query('SELECT PessoaID FROM Fornecedor WHERE FornecedorID = $1', [p_fornecedor_id]);
+      const pessoaId = resPessoa.rows[0]?.pessoaid;
+
+      if (!pessoaId) throw new Error("Fornecedor não encontrado ou sem PessoaID vinculado");
+
+      // 2. Calcular Total
+      const valorTotal = p_quantidade * p_preco_unitario;
+
+      // 3. Inserir Compra
+      const sqlCompra = `
+        INSERT INTO Compras (ProdutoID, FornecedorID, Quantidade, PrecoUnitario, ValorTotal, DataCompra)
+        VALUES ($1, $2, $3, $4, $5, NOW())
+        RETURNING CompraID
+      `;
+      const resCompra = await client.query(sqlCompra, [p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario, valorTotal]);
+      const compraId = resCompra.rows[0].compraid;
+
+      // 4. Inserir Movimentação (Trigger atualiza estoque de Produtos)
+      const sqlMov = `
+        INSERT INTO MovimentacaoEstoque (produto_id, tipo, quantidade, documento_referencia, data_movimentacao, pessoa_id)
+        VALUES ($1, 'ENTRADA', $2, $3, NOW(), $4)
+      `;
+      await client.query(sqlMov, [p_produto_id, p_quantidade, `COMPRA-${compraId}`, pessoaId]);
+
+      await client.query('COMMIT');
+      return compraId;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw new Error("Erro ao registrar compra: " + error.message);
+    } finally {
+      client.release();
+    }
   }
 
   // Deletar compra e estornar estoque
