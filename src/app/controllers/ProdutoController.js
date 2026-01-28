@@ -11,7 +11,12 @@ class ProdutoController {
   show(req, res) {
     const { id } = req.params;
     ProdutoRepository.findById(id)
-      .then(row => res.json(row))
+      .then(row => {
+        if (!row || row.length === 0) {
+          return res.status(404).json({ error: "Produto não encontrado" });
+        }
+        res.json(row[0]);
+      })
       .catch(error => res.status(500).json({ error: error }));
   }
 
