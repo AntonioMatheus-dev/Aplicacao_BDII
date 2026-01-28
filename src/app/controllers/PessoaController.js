@@ -11,7 +11,12 @@ class PessoaController {
   show(req, res) {
     const { id } = req.params;
     PessoaRepository.findById(id)
-      .then(row => res.json(row))
+      .then(row => {
+        if (!row || row.length === 0) {
+          return res.status(404).json({ error: "Pessoa não encontrada" });
+        }
+        res.json(row[0]);
+      })
       .catch(error => res.status(500).json({ error: error }));
   }
   
