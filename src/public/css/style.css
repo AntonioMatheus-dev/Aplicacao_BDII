@@ -1,7 +1,7 @@
 :root {
     --bg-body: #0f172a;
     --bg-sidebar: #1e293b;
-    --bg-card: #1e293b; /* Same as sidebar or slightly lighter */
+    --bg-card: #1e293b;
     --bg-card-hover: #334155;
     --bg-input: #334155;
     
@@ -55,7 +55,7 @@ ul {
     width: 100vw;
 }
 
-/* Sidebar */
+
 .sidebar {
     width: 260px;
     background-color: var(--bg-sidebar);
@@ -236,7 +236,6 @@ ul {
     padding: 2rem;
 }
 
-/* View Sections */
 .view-section {
     display: none;
     animation: fadeIn 0.3s ease-in-out;
