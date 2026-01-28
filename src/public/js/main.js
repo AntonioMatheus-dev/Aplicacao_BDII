@@ -159,7 +159,6 @@ const app = {
                     <td>${v.nomecliente || v.clienteid}</td>
                     <td>${v.nomeproduto || v.produtoid}</td>
                     <td>${v.quantidade}</td>
-                    <td>${v.quantidade}</td>
                     <td>R$ ${v.valortotal}</td>
                     <td>
                         <button class="icon-btn" onclick="app.editItem('venda', ${v.vendaid})"><i class="fa-solid fa-pen"></i></button>
@@ -184,7 +183,6 @@ const app = {
                     <td>${new Date(c.datacompra).toLocaleDateString()}</td>
                     <td>${c.nomeproduto || c.produtoid}</td>
                     <td>${c.nomefornecedor || c.fornecedorid}</td>
-                    <td>${c.quantidade}</td>
                     <td>${c.quantidade}</td>
                     <td>R$ ${c.valortotal}</td>
                     <td>
