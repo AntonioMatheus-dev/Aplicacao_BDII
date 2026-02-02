@@ -24,44 +24,14 @@ class CompraRepository {
     return consulta("SELECT * FROM Compras WHERE CompraID = $1", [id]);
   }
 
-  // Registrar compra usando Transação Direta
+  // Registrar compra usando a Procedure registrar_compra (Requisito de Procedure)
   async registrar(p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario) {
-    const client = await pool.connect();
     try {
-      await client.query('BEGIN');
-
-      // 1. Obter PessoaID do Fornecedor
-      const resPessoa = await client.query('SELECT PessoaID FROM Fornecedor WHERE FornecedorID = $1', [p_fornecedor_id]);
-      const pessoaId = resPessoa.rows[0]?.pessoaid;
-
-      if (!pessoaId) throw new Error("Fornecedor não encontrado ou sem PessoaID vinculado");
-
-      // 2. Calcular Total
-      const valorTotal = p_quantidade * p_preco_unitario;
-
-      // 3. Inserir Compra
-      const sqlCompra = `
-        INSERT INTO Compras (ProdutoID, FornecedorID, Quantidade, PrecoUnitario, ValorTotal, DataCompra)
-        VALUES ($1, $2, $3, $4, $5, NOW())
-        RETURNING CompraID
-      `;
-      const resCompra = await client.query(sqlCompra, [p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario, valorTotal]);
-      const compraId = resCompra.rows[0].compraid;
-
-      // 4. Inserir Movimentação (Trigger atualiza estoque de Produtos)
-      const sqlMov = `
-        INSERT INTO MovimentacaoEstoque (produto_id, tipo, quantidade, documento_referencia, data_movimentacao, pessoa_id)
-        VALUES ($1, 'ENTRADA', $2, $3, NOW(), $4)
-      `;
-      await client.query(sqlMov, [p_produto_id, p_quantidade, `COMPRA-${compraId}`, pessoaId]);
-
-      await client.query('COMMIT');
-      return compraId;
+      const sql = "CALL registrar_compra($1, $2, $3, $4)";
+      const valores = [p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario];
+      return consulta(sql, valores);
     } catch (error) {
-      await client.query('ROLLBACK');
-      throw new Error("Erro ao registrar compra: " + error.message);
-    } finally {
-      client.release();
+      throw new Error("Erro ao registrar compra via Procedure: " + error.message);
     }
   }
 
