@@ -173,9 +173,29 @@ ul {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2rem;
-    background-color: var(--bg-body); /* Transparant feel or solid */
+    padding: 0 1.5rem;
+    background-color: var(--bg-body);
     border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
 }
 
 .search-bar {
@@ -490,4 +510,77 @@ ul {
 .form-group input:focus, .form-group select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        bottom: 0;
+        z-index: 1001;
+        transition: var(--transition);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    }
+    
+    .sidebar.mobile-active {
+        left: 0;
+    }
+    
+    .menu-toggle {
+        display: flex;
+    }
+    
+    .search-bar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        padding: 0 1rem;
+    }
+    
+    .search-bar {
+        display: none; /* Hide search on mobile */
+    }
+    
+    .content-area {
+        padding: 1.5rem 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table-container {
+        overflow-x: auto; /* Enable scroll for tables */
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
 }
