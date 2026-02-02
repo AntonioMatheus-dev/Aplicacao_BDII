@@ -17,8 +17,28 @@ const app = {
         app.contentArea = document.getElementById('content-area');
         app.setupNavigation();
         app.setupModals();
+        app.setupMobileMenu();
 
         app.loadView('dashboard');
+    },
+
+    setupMobileMenu: () => {
+        const toggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('mobile-active');
+            });
+
+            // Close sidebar when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!sidebar.contains(e.target) && sidebar.classList.contains('mobile-active')) {
+                    sidebar.classList.remove('mobile-active');
+                }
+            });
+        }
     },
 
     setupNavigation: () => {
@@ -30,6 +50,9 @@ const app = {
                 
                 document.querySelector('.nav-item.active')?.classList.remove('active');
                 item.classList.add('active');
+                
+                // Close sidebar on mobile after selection
+                document.querySelector('.sidebar').classList.remove('mobile-active');
                 
                 app.loadView(item.dataset.target);
             });
