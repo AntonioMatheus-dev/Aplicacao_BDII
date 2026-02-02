@@ -22,44 +22,14 @@ class VendaRepository {
     return consulta("SELECT * FROM Vendas WHERE VendaID = $1", [id]);
   }
 
-  // Registrar venda usando Transação Direta para acionar a Trigger corretamente
+  // Registrar venda usando a Procedure registrar_venda (Requisito de Procedure)
   async registrar(p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario) {
-    const client = await pool.connect();
     try {
-      await client.query('BEGIN');
-
-      // 1. Obter PessoaID do Cliente
-      const resPessoa = await client.query('SELECT PessoaID FROM Cliente WHERE ClienteID = $1', [p_cliente_id]);
-      const pessoaId = resPessoa.rows[0]?.pessoaid;
-
-      if (!pessoaId) throw new Error("Cliente não encontrado ou sem PessoaID vinculado");
-
-      // 2. Calcular total
-      const valorTotal = p_quantidade * p_preco_unitario;
-
-      // 3. Inserir Venda
-      const sqlVenda = `
-        INSERT INTO Vendas (ProdutoID, ClienteID, Quantidade, PrecoUnitario, ValorTotal, DataVenda)
-        VALUES ($1, $2, $3, $4, $5, NOW())
-        RETURNING VendaID
-      `;
-      const resVenda = await client.query(sqlVenda, [p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario, valorTotal]);
-      const vendaId = resVenda.rows[0].vendaid;
-
-      // 4. Inserir Movimentação (A Trigger tg_atualizar_estoque vai atualizar o saldo em Produtos)
-      const sqlMov = `
-        INSERT INTO MovimentacaoEstoque (produto_id, tipo, quantidade, documento_referencia, data_movimentacao, pessoa_id)
-        VALUES ($1, 'SAIDA', $2, $3, NOW(), $4)
-      `;
-      await client.query(sqlMov, [p_produto_id, p_quantidade, `VENDA-${vendaId}`, pessoaId]);
-
-      await client.query('COMMIT');
-      return vendaId;
+      const sql = "CALL registrar_venda($1, $2, $3, $4)";
+      const valores = [p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario];
+      return consulta(sql, valores);
     } catch (error) {
-      await client.query('ROLLBACK');
-      throw new Error("Erro ao registrar venda: " + error.message);
-    } finally {
-      client.release();
+      throw new Error("Erro ao registrar venda via Procedure: " + error.message);
     }
   }
 
