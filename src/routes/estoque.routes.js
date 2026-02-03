@@ -1,4 +1,3 @@
-// src/routes/estoque.routes.js
 import { Router } from "express";
 import EstoqueController from '../app/controllers/EstoqueController.js'
 

@@ -1,4 +1,3 @@
-// src/routes/pessoa.routes.js
 import { Router } from "express";
 import PessoaController from '../app/controllers/PessoaController.js'
 

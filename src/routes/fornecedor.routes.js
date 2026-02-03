@@ -1,4 +1,3 @@
-// src/routes/fornecedor.routes.js
 import { Router } from "express";
 import FornecedorController from '../app/controllers/FornecedorController.js'
 

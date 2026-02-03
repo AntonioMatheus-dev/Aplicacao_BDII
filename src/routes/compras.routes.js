@@ -1,4 +1,3 @@
-// src/routes/compras.routes.js
 import { Router } from "express";
 import ComprasController from '../app/controllers/ComprasController.js'
 

@@ -1,4 +1,3 @@
-// src/routes/clientes.routes.js
 import { Router } from "express";
 import ClienteController from '../app/controllers/ClienteController.js'
 
