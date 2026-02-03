@@ -18,7 +18,6 @@ const app = {
         app.setupNavigation();
         app.setupModals();
         app.setupMobileMenu();
-
         app.loadView('dashboard');
     },
 
@@ -32,7 +31,6 @@ const app = {
                 sidebar.classList.toggle('mobile-active');
             });
 
-            // Close sidebar when clicking outside
             document.addEventListener('click', (e) => {
                 if (!sidebar.contains(e.target) && sidebar.classList.contains('mobile-active')) {
                     sidebar.classList.remove('mobile-active');
@@ -50,8 +48,6 @@ const app = {
                 
                 document.querySelector('.nav-item.active')?.classList.remove('active');
                 item.classList.add('active');
-                
-                // Close sidebar on mobile after selection
                 document.querySelector('.sidebar').classList.remove('mobile-active');
                 
                 app.loadView(item.dataset.target);
@@ -71,7 +67,6 @@ const app = {
             
             app.contentArea.innerHTML = html;
             
-            // Trigger specific view logic
             app.handleViewLoaded(viewName);
 
         } catch (error) {
@@ -81,8 +76,6 @@ const app = {
     },
 
     handleViewLoaded: (viewName) => {
-        // Logic mapping
-        // Logic mapping
         if (viewName === 'dashboard') {
             app.loadData('dashboard', '/produtos/movimentacoes');
         } else if (['produtos', 'clientes', 'fornecedores', 'vendas', 'estoque', 'compras', 'pessoas'].includes(viewName)) {
@@ -90,13 +83,12 @@ const app = {
         }
     },
 
-    // Data Loading Logic (Refactored from previous main.js)
     apiRoutes: {
         produtos: '/produtos',
         clientes: '/clientes',
         vendas: '/vendas',
         compras: '/compras',
-        estoque: '/produtos/estoque-baixo?limite=10', // Default
+        estoque: '/produtos/estoque-baixo?limite=10', 
         fornecedores: '/fornecedores',
         pessoas: '/pessoas'
     },
@@ -105,7 +97,7 @@ const app = {
         let containerName = `table-${section}`;
         let container = document.querySelector(`#${containerName} tbody`);
         if (!container) container = document.getElementById(`${section}-content`);
-        if(!container) return; // Silent fail if no container
+        if(!container) return; 
 
         const isTable = container.tagName === 'TBODY';
         if(!isTable) {
@@ -230,7 +222,6 @@ const app = {
                 </tr>
             `).join('');
         } else if (section === 'dashboard') {
-             // New Dashboard Logic: Render Movements Table
              html = data.map(m => `
                 <tr>
                     <td>${new Date(m.data_movimentacao).toLocaleString()}</td>
@@ -246,7 +237,7 @@ const app = {
         container.innerHTML = html;
     },
 
-    // ACTIONS
+
     loadEstoqueBaixo: () => {
         const limite = document.getElementById('estoque-limite').value || 10;
         app.loadData('estoque', `/produtos/estoque-baixo?limite=${limite}`);
@@ -255,8 +246,7 @@ const app = {
     deleteItem: async (type, id) => {
         if(!confirm('Tem certeza que deseja excluir?')) return;
         
-        // Fix pluralization for API routes if needed, relying on simple mapping for now
-        // Mapping types to API route keys in app.apiRoutes if they don't match directly
+
         let apiPath = type;
         if(type === 'cliente') apiPath = 'clientes';
         if(type === 'fornecedor') apiPath = 'fornecedores';
@@ -267,16 +257,15 @@ const app = {
 
         try {
             await fetch(`/${apiPath}/${id}`, { method: 'DELETE' });
-            // Refresh current view
             const currentView = document.querySelector('.nav-item.active')?.dataset.target || 'dashboard';
             app.loadData(currentView);
         } catch(e) { alert('Erro ao deletar'); console.error(e); }
     },
 
-    // MODALS
-    currentModalType: null,
-    currentEditId: null, // Track if we are editing
     
+    currentModalType: null,
+    currentEditId: null, 
+
     setupModals: () => {
         const closeModals = document.querySelectorAll('.close-modal');
         closeModals.forEach(btn => btn.addEventListener('click', () => {
@@ -286,7 +275,7 @@ const app = {
 
     openModal: (type, data = null) => {
         app.currentModalType = type;
-        if(!data) app.currentEditId = null; // Clear edit ID if opening new
+        if(!data) app.currentEditId = null; 
         const modal = document.getElementById('generic-modal');
         const title = document.getElementById('modal-title');
         const body = document.getElementById('modal-body');
@@ -298,7 +287,6 @@ const app = {
 
         modal.classList.add('active');
         
-        // Build Forms
         if (type === 'produto') {
             title.textContent = app.currentEditId ? 'Editar Produto' : 'Novo Produto';
             body.innerHTML = `
@@ -375,7 +363,7 @@ const app = {
             fetch('/fornecedores').then(r=>r.json())
         ]);
         
-        // For purchase, price might be pre-filled with cost price, but editable
+
         const prodOpt = prods.map(p => `<option value="${p.produtoid}" data-price="${p.precocusto || 0}">${p.nomeproduto}</option>`).join('');
         const fornOpt = forns.map(f => `<option value="${f.fornecedorid}">${f.nomerazaosocial}</option>`).join('');
 
@@ -397,7 +385,7 @@ const app = {
     },
 
     editItem: async (type, id) => {
-        // Map type to API endpoint
+    
         let apiPath = type;
         if(type === 'cliente') apiPath = 'clientes';
         if(type === 'fornecedor') apiPath = 'fornecedores';
@@ -412,7 +400,7 @@ const app = {
             const data = await res.json();
             
             app.currentEditId = id;
-            app.openModal(type, data); // Pass data to populate form
+            app.openModal(type, data); 
         } catch(e) {
             console.error(e);
             alert('Erro ao carregar dados para edição');
@@ -421,7 +409,6 @@ const app = {
 
     viewHistory: async (id) => {
         try {
-             // Fetch history from new location in ProdutoController
              const res = await fetch(`/produtos/${id}/historico`);
              
              const modal = document.getElementById('generic-modal');
@@ -429,7 +416,7 @@ const app = {
              const body = document.getElementById('modal-body');
              const saveBtn = document.getElementById('modal-save');
              
-             // Hide Save button for history view
+             
              saveBtn.style.display = 'none';
 
              title.textContent = 'Histórico de Movimentação';
@@ -473,7 +460,6 @@ const app = {
              html += '</tbody></table>';
              body.innerHTML = html;
 
-             // Restore save button when modal closes (simple hack, better to use separate Modal logic)
              const closeBtn = modal.querySelector('.close-modal');
              const restoreBtn = () => { saveBtn.style.display = 'block'; closeBtn.removeEventListener('click', restoreBtn); };
              closeBtn.addEventListener('click', restoreBtn);
@@ -517,11 +503,10 @@ const app = {
             document.querySelector('.modal-overlay').classList.remove('active');
             alert('Salvo!');
             
-            // Refresh logic - generic
             const activePage = document.querySelector('.nav-item.active')?.dataset.target;
             if(activePage) app.loadData(activePage);
             
-            app.currentEditId = null; // Reset
+            app.currentEditId = null; 
         } catch(e) { alert('Erro'); }
     }
 };
