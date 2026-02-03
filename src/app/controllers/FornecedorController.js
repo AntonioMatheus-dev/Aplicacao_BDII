@@ -1,4 +1,3 @@
-// controllers/FornecedorController.js
 import FornecedorRepository from "../repositories/FornecedorRepository.js";
 
 class FornecedorController {

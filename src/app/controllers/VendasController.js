@@ -1,8 +1,6 @@
-// controllers/VendasController.js
 import VendaRepository from "../repositories/VendaRepository.js";
 
 class VendasController {
-  // Listar todas as vendas
   index(req, res) {
     VendaRepository.findAll()
       .then(rows => res.status(200).json(rows))
@@ -13,7 +11,6 @@ class VendasController {
   }
 
   
-  // Buscar venda por ID
   show(req, res) {
     const { id } = req.params;
     VendaRepository.findById(id)
@@ -28,12 +25,11 @@ class VendasController {
         res.status(500).json({ error: error.message });
       });
   }
-
-  // Registrar nova venda (usa PROCEDURE)
+k
   store(req, res) {
     const { produtoId, clienteId, quantidade, precoUnitario } = req.body;
 
-    // Validações
+
     if (!produtoId || !clienteId || !quantidade || !precoUnitario) {
       return res.status(400).json({ 
         error: "produtoId, clienteId, quantidade e precoUnitario são obrigatórios" 

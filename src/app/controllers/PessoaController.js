@@ -1,4 +1,3 @@
-// controllers/PessoaController.js
 import PessoaRepository from "../repositories/PessoaRepository.js";
 
 class PessoaController {

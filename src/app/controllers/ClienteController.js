@@ -11,8 +11,7 @@ class ClienteController {
   
   show(req, res) {
     const { id } = req.params;
-    ClienteRepository.findById(id)
-      .then(row => {
+    ClienteRepository.findById(id).then(row => {
         if (!row || row.length === 0) {
           return res.status(404).json({ error: "Cliente não encontrado" });
         }

@@ -1,13 +1,11 @@
-// controllers/EstoqueController.js
 import EstoqueRepository from "../repositories/EstoqueRepository.js";
 
 class EstoqueController {
-  // Verificar produtos com estoque baixo
+
   estoqueBaixo(req, res) {
     const { limite = 10 } = req.query;
 
-    EstoqueRepository.verificarEstoqueBaixo(limite)
-      .then(produtos => {
+    EstoqueRepository.verificarEstoqueBaixo(limite).then(produtos => {
         if (produtos.length === 0) { 
           return res.status(200).json({ 
             message: "Nenhum produto com estoque baixo",

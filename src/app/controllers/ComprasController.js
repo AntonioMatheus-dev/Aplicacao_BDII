@@ -1,4 +1,3 @@
-// controllers/ComprasController.js
 import CompraRepository from "../repositories/CompraRepository.js";
 
 class ComprasController {
@@ -28,11 +27,8 @@ class ComprasController {
       });
   }
 
-  // Registrar nova compra (usa PROCEDURE)
   store(req, res) {
     const { produtoId, fornecedorId, quantidade, precoUnitario } = req.body;
-
-    // Validações
     if (!produtoId || !fornecedorId || !quantidade || !precoUnitario) {
       return res.status(400).json({ 
         error: "produtoId, fornecedorId, quantidade e precoUnitario são obrigatórios" 

@@ -1,4 +1,3 @@
-// controllers/ProdutoController.js
 import ProdutoRepository from "../repositories/ProdutoRepository.js";
 
 class ProdutoController {
