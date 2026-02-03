@@ -1,5 +1,5 @@
-// src/server.js
-import "dotenv/config"; // Carrega variaveis do .env
+
+import "dotenv/config"; 
 import app from "./app.js";
 import conexao from "./app/database/conexao.js";
 

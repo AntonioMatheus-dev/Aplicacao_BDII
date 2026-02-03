@@ -13,13 +13,13 @@ CREATE TABLE IF NOT EXISTS Cliente (
     DataCadastro TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS Fornecedor (
+CREATE TABLE  Fornecedor (
     FornecedorID SERIAL PRIMARY KEY,
     PessoaID INT NOT NULL REFERENCES PessoaBase(PessoaID) ON DELETE CASCADE,
     DataCadastro TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS Produtos (
+CREATE TABLE  Produtos (
     ProdutoID SERIAL PRIMARY KEY,
     NomeProduto VARCHAR(150) NOT NULL,
     Categoria VARCHAR(100),
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS Produtos (
     DataCadastro TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS Compras (
+CREATE TABLE  Compras (
     CompraID SERIAL PRIMARY KEY,
     ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID),
     FornecedorID INT NOT NULL REFERENCES Fornecedor(FornecedorID),
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS Compras (
     ValorTotal DECIMAL(12,2) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS Vendas (
+CREATE TABLE  Vendas (
     VendaID SERIAL PRIMARY KEY,
     ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID),
     ClienteID INT NOT NULL REFERENCES Cliente(ClienteID),
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS Vendas (
     ValorTotal DECIMAL(12,2) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS MovimentacaoEstoque (
+CREATE TABLE  MovimentacaoEstoque (
     mov_id SERIAL PRIMARY KEY,
     produto_id INT NOT NULL REFERENCES Produtos(ProdutoID),
     tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('ENTRADA','SAIDA','AJUSTE')),
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS MovimentacaoEstoque (
     data_movimentacao TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Trigger Function
+
 CREATE OR REPLACE FUNCTION atualizar_estoque_produto()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -92,14 +92,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger
+
 DROP TRIGGER IF EXISTS tg_atualizar_estoque ON MovimentacaoEstoque;
 CREATE TRIGGER tg_atualizar_estoque
 AFTER INSERT ON MovimentacaoEstoque
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_estoque_produto();
 
--- Procedure: Registrar Compra
+
 CREATE OR REPLACE PROCEDURE registrar_compra(
     p_produto_id INT,
     p_fornecedor_id INT,
@@ -146,7 +146,7 @@ BEGIN
 END;
 $$;
 
--- Procedure: Registrar Venda
+
 CREATE OR REPLACE PROCEDURE registrar_venda(
     p_produto_id INT,
     p_cliente_id INT,
@@ -197,7 +197,6 @@ BEGIN
 END;
 $$;
 
--- Function: Verificar Estoque Baixo
 CREATE OR REPLACE FUNCTION verificar_estoque_baixo(limite INT)
 RETURNS TABLE (
     produto_id INT,
