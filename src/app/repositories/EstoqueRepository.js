@@ -1,8 +1,6 @@
-// repositories/EstoqueRepository.js
 import { consulta } from "../database/conexao.js";
 
 class EstoqueRepository {
-
 
   verificarEstoqueBaixo(limite = 10) {
     const sql = "SELECT * FROM verificar_estoque_baixo($1);";

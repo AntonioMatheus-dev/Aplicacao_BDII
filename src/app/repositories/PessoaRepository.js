@@ -1,4 +1,3 @@
-// repositories/PessoaRepository.js
 import { consulta } from "../database/conexao.js";
 
 class PessoaRepository {
@@ -7,12 +6,11 @@ class PessoaRepository {
     return consulta("SELECT * FROM PessoaBase");
   }
 
-  // Buscar pessoa por ID
+
   findById(id) {
     return consulta("SELECT * FROM PessoaBase WHERE PessoaID = $1", [id]);
   }
 
-  // Criar pessoa
   store(data) {
     const { nomerazaosocial, documento, contato, observacao } = data;
     return consulta(
@@ -21,7 +19,6 @@ class PessoaRepository {
     );
   }
 
-  // Atualizar pessoa
   update(id, data) {
     const { nomerazaosocial, documento, contato, observacao } = data;
     return consulta(
@@ -30,7 +27,6 @@ class PessoaRepository {
     );
   }
 
-  // Deletar pessoa
   delete(id) {
     return consulta("DELETE FROM PessoaBase WHERE PessoaID = $1 RETURNING *", [id]);
   }

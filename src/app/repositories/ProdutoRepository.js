@@ -1,4 +1,3 @@
-// repositories/ProdutoRepository.js
 import { consulta } from "../database/conexao.js";
 
 class ProdutoRepository {
@@ -36,7 +35,7 @@ class ProdutoRepository {
     return consulta(sql, [id], "Não foi possível apagar produto");
   }
 
-  // Usa a FUNCTION que você criou
+  //FUNCTION
   verificarEstoqueBaixo(limite) {
     const sql = "SELECT * FROM verificar_estoque_baixo($1);";
     return consulta(sql, [limite], "Erro ao verificar estoque");

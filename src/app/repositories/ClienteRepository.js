@@ -1,8 +1,6 @@
-// repositories/ClienteRepository.js
 import { consulta } from "../database/conexao.js";
 
 class ClienteRepository {
-  // Buscar todos os clientes com dados da PessoaBase
   findAll() {
     const sql = `
       SELECT c.ClienteID, p.PessoaID, p.NomeRazaoSocial, p.Documento, p.Contato, 
@@ -14,7 +12,6 @@ class ClienteRepository {
     return consulta(sql, []);
   }
 
-  // Buscar cliente por ID
   findById(id) {
     const sql = `
       SELECT c.ClienteID, p.PessoaID, p.NomeRazaoSocial, p.Documento, p.Contato, 
@@ -37,8 +34,7 @@ class ClienteRepository {
     return consulta(sqlPessoa, [nomerazaosocial, documento, contato, observacao])
       .then(result => {
         const pessoaId = result[0].pessoaid;
-        
-        // Insere na tabela Cliente
+ 
         const sqlCliente = `
           INSERT INTO Cliente (PessoaID, DataCadastro)
           VALUES ($1, NOW())
@@ -49,7 +45,7 @@ class ClienteRepository {
       });
   }
 
-  // Atualizar cliente
+
   update(id, data) {
     const { nomerazaosocial, documento, contato, observacao } = data;
     
