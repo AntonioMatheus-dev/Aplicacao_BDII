@@ -3,9 +3,7 @@ import ClienteRepository from "../repositories/ClienteRepository.js";
 
 class ClienteController {
   index(req, res) {
-    ClienteRepository.findAll()
-      .then(rows => res.json(rows))
-      .catch(error => res.status(500).json({ error: error }));
+    ClienteRepository.findAll().then(rows => res.json(rows)).catch(error => res.status(500).json({ error: error }));
   }
 
   
@@ -24,6 +22,13 @@ class ClienteController {
     const data = req.body;
     ClienteRepository.store(data)
       .then(result => res.json({ message: "Cliente criado com sucesso", data: result }))
+      .catch(error => res.status(500).json({ error: error }));
+  }
+
+  promote(req, res) {
+    const { pessoaId } = req.body;
+    ClienteRepository.promote(pessoaId)
+      .then(result => res.json({ message: "Pessoa definida como cliente com sucesso", data: result }))
       .catch(error => res.status(500).json({ error: error }));
   }
 
