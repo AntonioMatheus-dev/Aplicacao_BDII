@@ -3,7 +3,16 @@ import { consulta } from "../database/conexao.js";
 class PessoaRepository {
   // Buscar todas as pessoas
   findAll() {
-    return consulta("SELECT * FROM PessoaBase");
+    const sql = `
+      SELECT p.*, 
+             CASE WHEN c.ClienteID IS NOT NULL THEN true ELSE false END as e_cliente,
+             CASE WHEN f.FornecedorID IS NOT NULL THEN true ELSE false END as e_fornecedor
+      FROM PessoaBase p
+      LEFT JOIN Cliente c ON p.PessoaID = c.PessoaID
+      LEFT JOIN Fornecedor f ON p.PessoaID = f.PessoaID
+      ORDER BY p.NomeRazaoSocial;
+    `;
+    return consulta(sql);
   }
 
 
