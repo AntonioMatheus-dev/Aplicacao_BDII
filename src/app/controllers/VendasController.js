@@ -25,7 +25,7 @@ class VendasController {
         res.status(500).json({ error: error.message });
       });
   }
-k
+
   store(req, res) {
     const { produtoId, clienteId, quantidade, precoUnitario } = req.body;
 
@@ -43,7 +43,9 @@ k
       }))
       .catch(error => {
         console.error("Erro ao registrar venda:", error);
-        res.status(500).json({ error: error.message });
+        // Extrair mensagem do erro corretamente
+        const errorMessage = error.message || error.toString() || 'Erro desconhecido';
+        res.status(500).json({ error: errorMessage });
       });
   }
 
