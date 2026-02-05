@@ -45,6 +45,17 @@ class ClienteRepository {
       });
   }
 
+  promote(pessoaId) {
+    const sqlCheck = "SELECT 1 FROM Cliente WHERE PessoaID = $1";
+    return consulta(sqlCheck, [pessoaId]).then(rows => {
+      if (rows && rows.length > 0) {
+        throw new Error("Pessoa já é um cliente");
+      }
+      const sql = "INSERT INTO Cliente (PessoaID, DataCadastro) VALUES ($1, NOW()) RETURNING *";
+      return consulta(sql, [pessoaId]);
+    });
+  }
+
 
   update(id, data) {
     const { nomerazaosocial, documento, contato, observacao } = data;
