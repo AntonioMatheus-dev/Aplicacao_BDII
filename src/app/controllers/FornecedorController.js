@@ -27,6 +27,13 @@ class FornecedorController {
       .catch(error => res.status(500).json({ error: error }));
   }
 
+  promote(req, res) {
+    const { pessoaId } = req.body;
+    FornecedorRepository.promote(pessoaId)
+      .then(result => res.json({ message: "Pessoa definida como fornecedor com sucesso", data: result }))
+      .catch(error => res.status(500).json({ error: error }));
+  }
+
   update(req, res) {
     const { id } = req.params;
     const data = req.body;
