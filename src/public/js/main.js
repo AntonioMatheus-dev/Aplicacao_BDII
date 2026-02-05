@@ -12,12 +12,15 @@ const routes = {
 
 const app = {
     contentArea: null,
+    currentData: [],
+    currentSection: '',
 
     init: () => {
         app.contentArea = document.getElementById('content-area');
         app.setupNavigation();
         app.setupModals();
         app.setupMobileMenu();
+        app.setupSearch();
         app.loadView('dashboard');
     },
 
@@ -110,6 +113,11 @@ const app = {
             const url = customUrl || app.apiRoutes[section];
             const response = await fetch(url);
             const data = await response.json();
+            
+            // Save state for filtering
+            app.currentData = data;
+            app.currentSection = section;
+            
             app.renderData(section, data, container);
         } catch (error) {
             console.error(error);
@@ -207,20 +215,37 @@ const app = {
                 </tr>
             `).join('');
         } else if (section === 'pessoas') {
-            html = data.map(p => `
+            html = data.map(p => {
+                const badgeCliente = p.e_cliente ? '<span class="badge success" title="Cliente">C</span>' : '';
+                const badgeFornecedor = p.e_fornecedor ? '<span class="badge info" title="Fornecedor">F</span>' : '';
+                
+                return `
                 <tr>
-                    <td>#${p.pessoaid}</td>
+                    <td>#${p.pessoaid} ${badgeCliente} ${badgeFornecedor}</td>
                     <td>${p.nomerazaosocial}</td>
                     <td>${p.documento || '-'}</td>
                     <td>${p.contato || '-'}</td>
                     <td>${p.observacao || '-'}</td>
                     <td>
-                        <button class="icon-btn" onclick="app.editItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-pen"></i></button>
-                        <button class="icon-btn" style="color:red" onclick="app.deleteItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-trash"></i></button>
+                        <button class="icon-btn" title="Editar" onclick="app.editItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-pen"></i></button>
+                        
+                        <button class="icon-btn" title="Definir como Cliente" 
+                                style="color: ${p.e_cliente ? '#ccc' : 'inherit'}"
+                                onclick="${p.e_cliente ? "alert('Já é cliente')" : `app.promoteTo('cliente', ${p.pessoaid})`}">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </button>
+
+                        <button class="icon-btn" title="Definir como Fornecedor" 
+                                style="color: ${p.e_fornecedor ? '#ccc' : 'inherit'}"
+                                onclick="${p.e_fornecedor ? "alert('Já é fornecedor')" : `app.promoteTo('fornecedor', ${p.pessoaid})`}">
+                            <i class="fa-solid fa-truck"></i>
+                        </button>
+
+                        <button class="icon-btn" title="Excluir" style="color:red" onclick="app.deleteItem('pessoa', ${p.pessoaid})"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
-                </tr>
-            `).join('');
+                `;
+            }).join('');
         } else if (section === 'dashboard') {
              html = data.map(m => `
                 <tr>
@@ -235,6 +260,64 @@ const app = {
         }
         
         container.innerHTML = html;
+    },
+
+    setupSearch: () => {
+        const searchInput = document.getElementById('global-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                app.filterData(term);
+            });
+        }
+    },
+
+    filterData: (term) => {
+        if (!app.currentData || !app.currentSection) return;
+
+        let containerName = `table-${app.currentSection}`;
+        let container = document.querySelector(`#${containerName} tbody`);
+        if (!container) container = document.getElementById(`${app.currentSection}-content`);
+        if (!container) return;
+
+        // Limpa o termo de busca (remove # e espaços extras)
+        const cleanTerm = term.replace('#', '').trim().toLowerCase();
+
+        // Volta ao original se o termo estiver vazio
+        if (!cleanTerm) {
+            app.renderData(app.currentSection, app.currentData, container);
+            return;
+        }
+
+        const filtered = app.currentData.filter(item => {
+            // Verifica todos os valores do objeto
+            return Object.entries(item).some(([key, val]) => {
+                if (val === null || val === undefined) return false;
+                
+                const keyLower = key.toLowerCase();
+                const stringVal = String(val).toLowerCase();
+                
+                // Se for uma busca puramente numérica (provável busca por ID)
+                if (!isNaN(cleanTerm) && cleanTerm !== "") {
+                    // Ignora campos de estoque, quantidade e preços
+                    if (keyLower.includes('estoque') || 
+                        keyLower.includes('quantidade') || 
+                        keyLower.includes('preco') || 
+                        keyLower.includes('total') ||
+                        keyLower.includes('unitario')) {
+                        return false; 
+                    }
+                    
+                    // Se for o ID exato, retorna verdadeiro
+                    if (keyLower.includes('id') && stringVal === cleanTerm) return true;
+                }
+
+                // Para buscas de texto (ou se o termo estiver contido no valor)
+                return stringVal.includes(cleanTerm);
+            });
+        });
+
+        app.renderData(app.currentSection, filtered, container);
     },
 
 
@@ -283,6 +366,7 @@ const app = {
         
         const newSaveBtn = saveBtn.cloneNode(true);
         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+        newSaveBtn.style.display = 'block';
         newSaveBtn.addEventListener('click', () => app.saveData(type));
 
         modal.classList.add('active');
@@ -460,9 +544,9 @@ const app = {
              html += '</tbody></table>';
              body.innerHTML = html;
 
-             const closeBtn = modal.querySelector('.close-modal');
-             const restoreBtn = () => { saveBtn.style.display = 'block'; closeBtn.removeEventListener('click', restoreBtn); };
-             closeBtn.addEventListener('click', restoreBtn);
+             const closeBtns = modal.querySelectorAll('.close-modal');
+             const restoreBtn = () => { saveBtn.style.display = 'block'; };
+             closeBtns.forEach(btn => btn.addEventListener('click', restoreBtn, { once: true }));
 
         } catch(e) {
             console.error(e);
@@ -489,6 +573,27 @@ const app = {
         const data = {};
         document.querySelectorAll('#modal-body [name]').forEach(i => data[i.name] = i.value);
         
+        // --- NOVO: Comparação de dados para evitar duplicados ---
+        if (type === 'pessoa' && !app.currentEditId) {
+            try {
+                const response = await fetch('/pessoas');
+                const pessoasExistentes = await response.json();
+                
+                const jaExiste = pessoasExistentes.find(p => 
+                    p.documento && data.documento && 
+                    p.documento.trim() === data.documento.trim()
+                );
+
+                if (jaExiste) {
+                    alert(`❌ Atenção: Já existe uma pessoa cadastrada com o documento "${data.documento}" (${jaExiste.nomerazaosocial}).`);
+                    return; // Interrompe o salvamento
+                }
+            } catch (e) {
+                console.error("Erro ao validar duplicados:", e);
+            }
+        }
+        // --------------------------------------------------------
+
         let url = app.apiRoutes[type + 's'];
         if(type === 'fornecedor') url = app.apiRoutes.fornecedores;
         
@@ -499,15 +604,89 @@ const app = {
         }
         
         try {
-            await fetch(url, { method: method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            const response = await fetch(url, { method: method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+            const result = await response.json();
+
+            if (!response.ok) {
+                app.handleError(result);
+                return;
+            }
+
             document.querySelector('.modal-overlay').classList.remove('active');
-            alert('Salvo!');
+            alert('Salvo com sucesso!');
             
             const activePage = document.querySelector('.nav-item.active')?.dataset.target;
             if(activePage) app.loadData(activePage);
             
             app.currentEditId = null; 
-        } catch(e) { alert('Erro'); }
+        } catch(e) { 
+            console.error(e);
+            alert('Erro crítico de conexão. Verifique se o servidor está rodando.'); 
+        }
+    },
+
+    promoteTo: async (role, pessoaId) => {
+        const confirmMsg = role === 'cliente' ? 'Deseja definir esta pessoa como CLIENTE?' : 'Deseja definir esta pessoa como FORNECEDOR?';
+        if (!confirm(confirmMsg)) return;
+
+        const url = role === 'cliente' ? '/clientes/promote' : '/fornecedores/promote';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pessoaId })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message || 'Promovido com sucesso!');
+                app.loadData('pessoas'); // Recarrega para atualizar os ícones
+            } else {
+                app.handleError(result);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao tentar promover pessoa.');
+        }
+    },
+
+    handleError: (result) => {
+        console.error('Erro detalhado:', result);
+        
+        let errorMsg = "";
+        if (result.error) {
+            errorMsg = typeof result.error === 'object' ? (result.error.message || JSON.stringify(result.error)) : String(result.error);
+        } else if (result.message) {
+            errorMsg = String(result.message);
+        } else {
+            errorMsg = JSON.stringify(result);
+        }
+
+        const msgLower = errorMsg.toLowerCase();
+
+        // 1. Erro de Documento Duplicado (CPF/CNPJ)
+        // Busca agressiva por qualquer menção a duplicado + documento ou o nome da tabela
+        if (
+            msgLower.includes('pessoabase') && (msgLower.includes('duplic') || msgLower.includes('unique') || msgLower.includes('unicidade')) 
+            || (msgLower.includes('chave') && msgLower.includes('documento'))
+        ) {
+            alert('❌ Erro: Este CPF/CNPJ já está cadastrado no sistema.');
+        } 
+        // 2. Erro de Estoque
+        else if (msgLower.includes('estoque') || msgLower.includes('stock')) {
+            alert('⚠️ Atenção: Estoque insuficiente ou erro na movimentação.');
+        } 
+        // 3. Pessoa já promovida
+        else if (msgLower.includes('cliente') && msgLower.includes('já')) {
+            alert('ℹ️ Esta pessoa já está cadastrada como Cliente.');
+        } 
+        else if (msgLower.includes('fornecedor') && msgLower.includes('already')) {
+            alert('ℹ️ Esta pessoa já está cadastrada como Fornecedor.');
+        }
+        // 4. Erro Genérico (Mostra a mensagem amigável se possível)
+        else {
+            alert('Erro no Sistema: ' + errorMsg);
+        }
     }
 };
 
