@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS Cliente (
     DataCadastro TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE  Fornecedor (
+CREATE TABLE Fornecedor (
     FornecedorID SERIAL PRIMARY KEY,
     PessoaID INT NOT NULL REFERENCES PessoaBase(PessoaID) ON DELETE CASCADE,
     DataCadastro TIMESTAMP DEFAULT NOW()
@@ -31,8 +31,8 @@ CREATE TABLE  Produtos (
 
 CREATE TABLE  Compras (
     CompraID SERIAL PRIMARY KEY,
-    ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID),
-    FornecedorID INT NOT NULL REFERENCES Fornecedor(FornecedorID),
+    ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID) ON DELETE CASCADE,
+    FornecedorID INT NOT NULL REFERENCES Fornecedor(FornecedorID) ON DELETE CASCADE,
     DataCompra TIMESTAMP NOT NULL DEFAULT NOW(),
     Quantidade INT NOT NULL CHECK (Quantidade > 0),
     PrecoUnitario DECIMAL(10,2) NOT NULL,
@@ -41,8 +41,8 @@ CREATE TABLE  Compras (
 
 CREATE TABLE  Vendas (
     VendaID SERIAL PRIMARY KEY,
-    ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID),
-    ClienteID INT NOT NULL REFERENCES Cliente(ClienteID),
+    ProdutoID INT NOT NULL REFERENCES Produtos(ProdutoID) ON DELETE CASCADE,
+    ClienteID INT NOT NULL REFERENCES Cliente(ClienteID) ON DELETE CASCADE,
     DataVenda TIMESTAMP NOT NULL DEFAULT NOW(),
     Quantidade INT NOT NULL CHECK (Quantidade > 0),
     PrecoUnitario DECIMAL(10,2) NOT NULL,
@@ -51,11 +51,11 @@ CREATE TABLE  Vendas (
 
 CREATE TABLE  MovimentacaoEstoque (
     mov_id SERIAL PRIMARY KEY,
-    produto_id INT NOT NULL REFERENCES Produtos(ProdutoID),
+    produto_id INT NOT NULL REFERENCES Produtos(ProdutoID) ON DELETE CASCADE,
     tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('ENTRADA','SAIDA','AJUSTE')),
     quantidade INT NOT NULL CHECK (quantidade > 0),
     documento_referencia VARCHAR(100) NOT NULL,
-    pessoa_id INT NOT NULL REFERENCES PessoaBase(PessoaID),
+    pessoa_id INT NOT NULL REFERENCES PessoaBase(PessoaID) ON DELETE CASCADE,
     data_movimentacao TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
