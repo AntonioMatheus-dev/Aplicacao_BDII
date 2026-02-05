@@ -542,7 +542,7 @@ ul {
     }
     
     .search-bar {
-        display: none; /* Hide search on mobile */
+        width: 100px; /* Reduz tamanho mas mantém visível */
     }
     
     .content-area {
