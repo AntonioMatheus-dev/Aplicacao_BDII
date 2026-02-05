@@ -81,8 +81,6 @@ class ClienteRepository {
            throw new Error("Cliente não encontrado");
         }
         const pessoaId = rows[0].pessoaid;
-        
-        // Deletar a PessoaBase (Cascade deve deletar o Cliente)
         const sqlDelete = "DELETE FROM PessoaBase WHERE PessoaID = $1 RETURNING *";
         return consulta(sqlDelete, [pessoaId]);
       });
