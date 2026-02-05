@@ -48,6 +48,17 @@ class FornecedorRepository {
       });
   }
 
+  promote(pessoaId) {
+    const sqlCheck = "SELECT 1 FROM Fornecedor WHERE PessoaID = $1";
+    return consulta(sqlCheck, [pessoaId]).then(rows => {
+      if (rows && rows.length > 0) {
+        throw new Error("Pessoa já é um fornecedor");
+      }
+      const sql = "INSERT INTO Fornecedor (PessoaID, DataCadastro) VALUES ($1, NOW()) RETURNING *";
+      return consulta(sql, [pessoaId]);
+    });
+  }
+
   // Atualizar fornecedor
   update(id, data) {
     const { nome, cnpj, email, telefone } = data;
