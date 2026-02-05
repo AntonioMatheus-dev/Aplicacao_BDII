@@ -662,28 +662,49 @@ const app = {
             errorMsg = JSON.stringify(result);
         }
 
+        // Se retornou objeto vazio ou string vazia, trata como erro genérico do servidor
+        if (errorMsg === '{}' || errorMsg === '""' || !errorMsg) {
+            // Tenta pegar statusText se disponível no result (se o fetch passar o objeto response, mas aqui passamos json)
+            errorMsg = "Ocorreu um erro desconhecido no servidor.";
+        }
+
+        // DEBUG: Ver exatamente o que está chegando
+        console.log('ErrorMsg extraído:', errorMsg);
+        console.log('ErrorMsg lowercase:', errorMsg.toLowerCase());
+
         const msgLower = errorMsg.toLowerCase();
 
-        // 1. Erro de Documento Duplicado (CPF/CNPJ)
-        // Busca agressiva por qualquer menção a duplicado + documento ou o nome da tabela
-        if (
+        // 1. Erro de Estoque Insuficiente (com detalhes)
+        if (msgLower.includes('estoque insuficiente') || msgLower.includes('estoque:')) {
+            // Tentar extrair os números (disponível e solicitado)
+            const match = errorMsg.match(/disponível\s+(\d+),?\s*solicitado\s+(\d+)/i);
+            if (match) {
+                const disponivel = match[1];
+                const solicitado = match[2];
+                alert(`⚠️ Estoque Insuficiente!\n\nVocê tentou vender ${solicitado} unidade(s), mas há apenas ${disponivel} disponível(is) no estoque.\n\nPor favor, ajuste a quantidade ou reabasteça o produto.`);
+            } else {
+                alert('⚠️ Atenção: Estoque insuficiente para realizar esta operação.');
+            }
+        }
+        // 2. Erro de Documento Duplicado (CPF/CNPJ)
+        else if (
             msgLower.includes('pessoabase') && (msgLower.includes('duplic') || msgLower.includes('unique') || msgLower.includes('unicidade')) 
             || (msgLower.includes('chave') && msgLower.includes('documento'))
         ) {
             alert('❌ Erro: Este CPF/CNPJ já está cadastrado no sistema.');
         } 
-        // 2. Erro de Estoque
+        // 3. Outros erros de estoque/movimentação
         else if (msgLower.includes('estoque') || msgLower.includes('stock')) {
-            alert('⚠️ Atenção: Estoque insuficiente ou erro na movimentação.');
+            alert('⚠️ Atenção: Erro na movimentação de estoque.');
         } 
-        // 3. Pessoa já promovida
+        // 4. Pessoa já promovida
         else if (msgLower.includes('cliente') && msgLower.includes('já')) {
             alert('ℹ️ Esta pessoa já está cadastrada como Cliente.');
         } 
-        else if (msgLower.includes('fornecedor') && msgLower.includes('already')) {
+        else if (msgLower.includes('fornecedor') && (msgLower.includes('já') || msgLower.includes('already'))) {
             alert('ℹ️ Esta pessoa já está cadastrada como Fornecedor.');
         }
-        // 4. Erro Genérico (Mostra a mensagem amigável se possível)
+        // 5. Erro Genérico
         else {
             alert('Erro no Sistema: ' + errorMsg);
         }
