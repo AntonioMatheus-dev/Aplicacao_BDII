@@ -16,6 +16,7 @@
 
   const pool = new Pool(config);
 
+  
   pool.on("error", (err) => {
     console.error("Erro não esperado no pool:", err);
   });

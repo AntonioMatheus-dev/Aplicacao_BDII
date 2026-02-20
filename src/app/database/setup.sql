@@ -137,8 +137,6 @@ BEGIN
     VALUES (p_produto_id, p_fornecedor_id, NOW(), p_quantidade, p_preco_unitario, v_valor_total)
     RETURNING CompraID INTO v_compra_id;
 
-    INSERT INTO MovimentacaoEstoque (produto_id, tipo, quantidade, documento_referencia, pessoa_id)
-    VALUES (p_produto_id,'ENTRADA', p_quantidade, 'COMPRA- ' || v_compra_id,(SELECT PessoaID FROM Fornecedor WHERE FornecedorID = p_fornecedor_id));
 
     UPDATE Produtos
     SET PrecoCusto = p_preco_unitario
