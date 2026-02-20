@@ -1,5 +1,5 @@
 import { Router } from "express";
-import EstoqueController from '../app/controllers/EstoqueController.js'
+import EstoqueController from '../app/controllers/Estoque.Controller.js'
 
 const router = Router();
 
