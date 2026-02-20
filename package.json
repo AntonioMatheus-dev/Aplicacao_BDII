@@ -1,12 +1,19 @@
 {
   
   "name": "aplicacao",
+  
   "version": "1.0.0",
+  
   "main": "index.js",
+  
   "type": "module",
   
   "scripts": {
+  
+    
   "start": "node src/server.js",
+  
+    
   "dev": "nodemon ./src/server.js",
   
     
@@ -26,6 +33,9 @@
   
     
   "axios": "^1.13.4",
+  
+    
+  "cors": "^2.8.6",
   
     
   "dotenv": "^17.2.3",
