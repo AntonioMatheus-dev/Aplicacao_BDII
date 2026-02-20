@@ -1,4 +1,3 @@
-//Controllers/ClienteController.js
 import ClienteRepository from "../repositories/ClienteRepository.js";
 
 class ClienteController {

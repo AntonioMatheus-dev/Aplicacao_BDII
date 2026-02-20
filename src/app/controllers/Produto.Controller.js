@@ -30,8 +30,8 @@ class ProdutoController {
 
   update(req, res) {
     const { id } = req.params;
-    const { nomeProduto, categoria, precoVenda, precoCusto } = req.body;
-    const params = [nomeProduto, categoria, precoVenda, precoCusto, id];
+    const { nomeProduto, categoria, precoVenda, estoque, precoCusto } = req.body;
+    const params = [nomeProduto, categoria, precoVenda, estoque, precoCusto, id];
     ProdutoRepository.update(params)
       .then(result => res.json({ message: "Produto atualizado com sucesso", data: result }))
       .catch(error => res.status(500).json({ error: error }));
