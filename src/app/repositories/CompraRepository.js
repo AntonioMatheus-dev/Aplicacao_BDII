@@ -17,7 +17,7 @@ class CompraRepository {
 
 
 
-  
+
   findById(id) {
     return consulta("SELECT * FROM Compras WHERE CompraID = $1", [id]);
   }
@@ -28,7 +28,7 @@ class CompraRepository {
       const valores = [p_produto_id, p_fornecedor_id, p_quantidade, p_preco_unitario];
       return consulta(sql, valores);
     } catch (error) {
-      throw new Error("Erro ao registrar compra via Procedure: " + error.message);
+      throw new Error("Erro ao registrar compra: " + error.message);
     }
   }
 
@@ -38,7 +38,6 @@ class CompraRepository {
          if (!rows || rows.length === 0) throw new Error("Compra não encontrada");
          const compra = rows[0];
 
-
          const sqlEstorno = "UPDATE Produtos SET Estoque = Estoque - $1 WHERE ProdutoID = $2";
          return consulta(sqlEstorno, [compra.quantidade, compra.produtoid])
            .then(() => {
@@ -46,7 +45,6 @@ class CompraRepository {
               return consulta(sqlDelMov, [`COMPRA- ${id}`]); 
            })
            .then(() => {
-
               return consulta("DELETE FROM Compras WHERE CompraID = $1", [id]);
            });
       });

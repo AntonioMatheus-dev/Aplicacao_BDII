@@ -20,9 +20,13 @@ class VendaRepository {
   }
 // PROCEDURE
   async registrar(p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario) {
-    const sql = "CALL registrar_venda($1, $2, $3, $4)";
-    const valores = [p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario];
-    return consulta(sql, valores);
+    try{
+      const sql = "CALL registrar_venda($1, $2, $3, $4)";
+      const valores = [p_produto_id, p_cliente_id, p_quantidade, p_preco_unitario];
+      return consulta(sql, valores);
+     } catch (error) {
+      throw new Error("Erro ao registrar venda: " + error.message);
+    }
   }
 
   delete(id) {

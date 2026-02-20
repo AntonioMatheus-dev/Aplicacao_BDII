@@ -23,8 +23,8 @@ class ProdutoRepository {
   update(params) {
     const sql = `
       UPDATE Produtos 
-      SET NomeProduto = $1, Categoria = $2, PrecoVenda = $3, PrecoCusto = $4
-      WHERE ProdutoID = $5
+      SET NomeProduto = $1, Categoria = $2, PrecoVenda = $3, Estoque = $4, PrecoCusto = $5
+      WHERE ProdutoID = $6
       RETURNING *;
     `;
     return consulta(sql, params, "Não foi possível atualizar produto");

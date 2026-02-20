@@ -61,9 +61,9 @@ class ClienteRepository {
     const { nomerazaosocial, documento, contato, observacao } = data;
     
     const sql = `
-      UPDATE PessoaBase 
+      plDATE PessoaBase 
       SET NomeRazaoSocial = $1, Documento = $2, Contato = $3, Observacao = $4
-      WHERE PessoaID = (SELECT PessoaID FROM Cliente WHERE ClienteID = $1)
+      WHERE PessoaID = (SELECT PessoaID FROM Cliente WHERE ClienteID = $5)
       RETURNING PessoaID;
     `;
     
