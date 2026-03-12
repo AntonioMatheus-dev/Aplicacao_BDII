@@ -9,6 +9,11 @@ import pessoaRoutes from "./pessoa.routes.js";
 
 const router = Router();
 
+// Rota para manter o serviço acordado
+router.get("/ping", (req, res) => {
+  res.status(200).send("pong");
+});
+
 router.use("/produtos", produtoRoutes);
 router.use("/compras", comprasRoutes);
 router.use("/vendas", vendaRoutes);
